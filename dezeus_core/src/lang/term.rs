@@ -21,19 +21,6 @@ pub enum Error {
 }
 
 impl Term {
-    pub fn validate_each_symbol(&self) -> i8 {
-        let mut position = 0;
-        for symbol in self.sequence.iter() {
-            if !self.language.symbols().contains(symbol) {
-                return position;
-            }
-            position += 1;
-        }
-        return -1;
-    }
-}
-
-impl Term {
     pub fn new(language: Language, sequence: Vec<Symbol>) -> Result<Self, Error> {
         let term = Term { language, sequence };
         if term.validate_each_symbol() >= 0 {
@@ -44,11 +31,76 @@ impl Term {
         }
         Ok(term)
     }
+
     pub fn sequence(&self) -> Vec<Symbol> {
         self.sequence.clone()
     }
+
     pub fn language(&self) -> &Language {
         &self.language
+    }
+
+    pub fn size(&self) -> usize {
+        self.sequence.len()
+    }
+
+    fn validate_each_symbol(&self) -> i8 {
+        let mut position = 0;
+        for symbol in self.sequence.iter() {
+            if !self.language.symbols().contains(symbol) {
+                return position;
+            }
+            position += 1;
+        }
+        return -1;
+    }
+
+    fn is_variable(&self) -> bool {
+        if self.size() != 1 {
+            return false;
+        }
+        self.sequence[0].variant() == Variant::Variable
+    }
+
+    fn is_constant(&self) -> bool {
+        if self.size() != 1 {
+            return false;
+        }
+        self.sequence[0].variant() == Variant::Constant
+    }
+
+    fn is_composite(&self) -> bool {
+        if self.size() < 4 {
+            return false;
+        }
+        if self.sequence[1] != Symbol::left_paren() {
+            return false;
+        }
+        if self.sequence[self.size() - 1] != Symbol::right_paren() {
+            return false;
+        }
+        if self.sequence[0].variant() != Variant::Function {
+            return false;
+        }
+        let mut term_vec: Vec<&Symbol> = Vec::new();
+        for symbol in self.sequence.iter().skip(1) {
+            if symbol == &Symbol::comma() {
+                match Term::new(
+                    self.language.clone(),
+                    term_vec.iter().cloned().cloned().collect(),
+                ) {
+                    Ok(_) => {
+                        term_vec.clear();
+                    }
+                    Err(_) => {
+                        return false;
+                    }
+                }
+            } else {
+                term_vec.push(symbol);
+            }
+        }
+        false
     }
 }
 
