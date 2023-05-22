@@ -1,6 +1,5 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol {
-    id: i8,
     string: String,
     variant: Variant,
     arity: i8,
@@ -17,17 +16,39 @@ pub enum Variant {
 }
 
 impl Symbol {
-    pub const fn new(id: i8, string: String, variant: Variant) -> Self {
+    pub fn left_paren() -> Self {
+        Self::new(String::from("("), Variant::Grouping)
+    }
+    pub fn right_paren() -> Self {
+        Self::new(String::from(")"), Variant::Grouping)
+    }
+    pub fn comma() -> Self {
+        Self::new(String::from(","), Variant::Grouping)
+    }
+    pub fn not() -> Self {
+        Self::new(String::from("¬"), Variant::Logical)
+    }
+    pub fn implies() -> Self {
+        Self::new(String::from("→"), Variant::Logical)
+    }
+    pub fn for_all() -> Self {
+        Self::new(String::from("∀"), Variant::Logical)
+    }
+    pub fn equals() -> Self {
+        Self::new(String::from("="), Variant::Logical)
+    }
+}
+
+impl Symbol {
+    pub fn new(string: String, variant: Variant) -> Self {
         Self {
-            id,
             string,
             variant,
             arity: 0,
         }
     }
-    pub fn new_with_arity(id: i8, string: String, variant: Variant, arity: i8) -> Self {
+    pub fn new_with_arity(string: String, variant: Variant, arity: i8) -> Self {
         Self {
-            id,
             string,
             variant,
             arity,
