@@ -1,42 +1,45 @@
+use std::collections::HashSet;
+
 use super::symbol::*;
 
 pub struct Language {
-    symbols: Vec<Symbol>,
+    symbols: HashSet<Symbol>,
 }
 
 impl Language {
-    pub fn l() -> Self {
-        Language {
-            symbols: vec![
-                Symbol::left_paren(),
-                Symbol::right_paren(),
-                Symbol::comma(),
-                Symbol::not(),
-                Symbol::implies(),
-                Symbol::for_all(),
-                Symbol::equals(),
-            ],
-        }
-    }
-}
-
-impl Language {
-    pub fn extend(&self, symbols: Vec<Symbol>) -> Self {
-        let mut new_symbols = self.symbols.clone();
-        for symbol in symbols.iter() {
-            new_symbols.push(symbol.clone());
-        }
-        Language {
-            symbols: new_symbols,
-        }
-    }
-    pub fn new(symbols: Vec<Symbol>) -> Self {
+    fn new(symbols: HashSet<Symbol>) -> Self {
         return Language::l().extend(symbols);
     }
-    pub fn symbols(&self) -> Vec<Symbol> {
+    fn extend(&self, symbols: HashSet<Symbol>) -> Self {
+        let mut new_symbols = self.symbols.clone();
+        new_symbols.extend(symbols);
+        return Language {
+            symbols: new_symbols,
+        };
+    }
+}
+
+#[macro_export]
+macro_rules! lang {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut symbols = HashSet::new();
+            $(
+                symbols.insert($x);
+            )*
+            Language::new(symbols)
+        }
+    };
+}
+
+impl Language {
+    pub fn symbols(&self) -> HashSet<Symbol> {
         self.symbols.clone()
     }
     pub fn size(&self) -> usize {
         self.symbols.len()
+    }
+    pub fn l() -> Self {
+        lang!(Symbol::left_paren(), Symbol::right_paren())
     }
 }

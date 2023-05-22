@@ -72,3 +72,11 @@ impl Formalize for Symbol {
         self.string.clone()
     }
 }
+
+use std::fmt::Display;
+
+impl Display for Symbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", Formalize::formalize(self))
+    }
+}
