@@ -1,5 +1,6 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol {
+    id: i8,
     string: String,
     variant: Variant,
     arity: i8,
@@ -8,6 +9,7 @@ pub struct Symbol {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Variant {
     Logical,
+    Grouping,
     Variable,
     Constant,
     Function,
@@ -15,15 +17,17 @@ pub enum Variant {
 }
 
 impl Symbol {
-    pub fn new(string: String, variant: Variant) -> Self {
+    pub const fn new(id: i8, string: String, variant: Variant) -> Self {
         Self {
+            id,
             string,
             variant,
             arity: 0,
         }
     }
-    pub fn new_with_arity(string: String, variant: Variant, arity: i8) -> Self {
+    pub fn new_with_arity(id: i8, string: String, variant: Variant, arity: i8) -> Self {
         Self {
+            id,
             string,
             variant,
             arity,
