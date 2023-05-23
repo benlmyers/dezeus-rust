@@ -23,10 +23,22 @@ pub enum Error {
 impl Term {
     pub fn new(language: Language, sequence: Vec<Symbol>) -> Result<Self, Error> {
         let term = Term { language, sequence };
-        if term.validate_each_symbol() >= 0 {
+        if term.val_each_symbol() >= 0 {
             return Err(Error::SymbolNotInLanguage {
-                symbol: term.sequence[term.validate_each_symbol() as usize].clone(),
-                position: term.validate_each_symbol(),
+                symbol: term.sequence[term.val_each_symbol() as usize].clone(),
+                position: term.val_each_symbol(),
+            });
+        }
+        if term.size() == 1 {
+            if term.is_variable() {
+                return Ok(term);
+            }
+            if term.is_constant() {
+                return Ok(term);
+            }
+            return Err(Error::SymbolNotInLanguage {
+                symbol: term.sequence[0].clone(),
+                position: 0,
             });
         }
         Ok(term)
@@ -44,7 +56,7 @@ impl Term {
         self.sequence.len()
     }
 
-    fn validate_each_symbol(&self) -> i8 {
+    fn val_each_symbol(&self) -> i8 {
         let mut position = 0;
         for symbol in self.sequence.iter() {
             if !self.language.symbols().contains(symbol) {
@@ -83,6 +95,7 @@ impl Term {
             return false;
         }
         let mut term_vec: Vec<&Symbol> = Vec::new();
+        let mut param_count = 0;
         for symbol in self.sequence.iter().skip(1) {
             if symbol == &Symbol::comma() {
                 match Term::new(
@@ -90,6 +103,7 @@ impl Term {
                     term_vec.iter().cloned().cloned().collect(),
                 ) {
                     Ok(_) => {
+                        param_count += 1;
                         term_vec.clear();
                     }
                     Err(_) => {
@@ -100,7 +114,7 @@ impl Term {
                 term_vec.push(symbol);
             }
         }
-        false
+        param_count == self.sequence[0].arity()
     }
 }
 

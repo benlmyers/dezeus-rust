@@ -46,22 +46,6 @@ impl Symbol {
 }
 
 impl Symbol {
-    pub fn new(string: String, variant: Variant) -> Self {
-        Self {
-            string,
-            variant,
-            arity: 0,
-        }
-    }
-
-    pub fn new_with_arity(string: String, variant: Variant, arity: i8) -> Self {
-        Self {
-            string,
-            variant,
-            arity,
-        }
-    }
-
     pub fn string(&self) -> String {
         self.string.clone()
     }
@@ -72,6 +56,34 @@ impl Symbol {
 
     pub fn arity(&self) -> i8 {
         self.arity
+    }
+
+    pub fn constant(string: String) -> Self {
+        Self::new(string, Variant::Constant)
+    }
+
+    pub fn variable(string: String) -> Self {
+        Self::new(string, Variant::Variable)
+    }
+
+    pub fn function(string: String, arity: i8) -> Self {
+        Self::new_with_arity(string, Variant::Function, arity)
+    }
+
+    fn new(string: String, variant: Variant) -> Self {
+        Self {
+            string,
+            variant,
+            arity: 0,
+        }
+    }
+
+    fn new_with_arity(string: String, variant: Variant, arity: i8) -> Self {
+        Self {
+            string,
+            variant,
+            arity,
+        }
     }
 }
 
