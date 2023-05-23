@@ -22,7 +22,7 @@ fn define_atomic_test() {
     let t4 = Term::new(
         l1.clone(),
         vec![
-            a.clone(),
+            f.clone(),
             Symbol::left_paren(),
             a.clone(),
             Symbol::comma(),

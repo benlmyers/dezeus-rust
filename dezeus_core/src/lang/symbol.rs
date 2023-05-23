@@ -1,4 +1,7 @@
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+use super::Formalize;
+use std::fmt::{Debug, Display};
+
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Symbol {
     string: String,
     variant: Variant,
@@ -87,18 +90,20 @@ impl Symbol {
     }
 }
 
-use super::Formalize;
-
 impl Formalize for Symbol {
     fn formalize(&self) -> String {
         self.string.clone()
     }
 }
 
-use std::fmt::Display;
-
 impl Display for Symbol {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", Formalize::formalize(self))
+    }
+}
+
+impl Debug for Symbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ({:?})", Formalize::formalize(self), self.variant)
     }
 }

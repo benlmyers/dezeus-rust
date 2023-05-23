@@ -1,4 +1,5 @@
-use std::fmt::Display;
+use std::fmt::Result as FmtResult;
+use std::fmt::{Debug, Display};
 
 use super::language::Language;
 use super::symbol::*;
@@ -26,7 +27,7 @@ pub enum Error {
     },
 }
 
-impl Display for Error {
+impl Debug for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Error::SymbolNotInLanguage { symbol, position } => {
@@ -40,7 +41,7 @@ impl Display for Error {
                 write!(f, "Invalid construction at position {}", position)
             }
             Error::InvalidSubterm { item, cause } => {
-                write!(f, "Invalid subterm {:?}: {}", item, cause)
+                write!(f, "Invalid subterm {:?}: {:?}", item, cause)
             }
             Error::InvalidArity { expected, found } => {
                 write!(f, "Invalid arity: expected {}, found {}", expected, found)
@@ -132,8 +133,8 @@ impl Term {
         }
         let mut term_vec: Vec<&Symbol> = Vec::new();
         let mut param_count = 0;
-        for symbol in self.sequence.iter().skip(1) {
-            if symbol == &Symbol::comma() {
+        for symbol in self.sequence.iter().skip(2) {
+            if symbol == &Symbol::comma() || symbol == &Symbol::right_paren() {
                 match Term::new(
                     self.language.clone(),
                     term_vec.iter().cloned().cloned().collect(),
@@ -178,7 +179,13 @@ impl Formalize for Term {
 }
 
 impl Display for Term {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> FmtResult {
+        write!(f, "{}", Formalize::formalize(self))
+    }
+}
+
+impl Debug for Term {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> FmtResult {
         write!(f, "{}", Formalize::formalize(self))
     }
 }
