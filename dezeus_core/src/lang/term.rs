@@ -1,7 +1,5 @@
 use std::fmt::Display;
 
-use snafu::prelude::*;
-
 use super::language::Language;
 use super::symbol::*;
 
@@ -10,23 +8,54 @@ pub struct Term {
     sequence: Vec<Symbol>,
 }
 
-#[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display(
-        "Unable to find symbol {} at position {} in the language.",
-        symbol,
-        position
-    ))]
-    SymbolNotInLanguage { symbol: Symbol, position: i8 },
+    SymbolNotInLanguage {
+        symbol: Symbol,
+        position: i8,
+    },
+    InvalidConstruction {
+        position: i8,
+    },
+    InvalidSubterm {
+        item: Vec<Symbol>,
+        cause: Box<Error>,
+    },
+    InvalidArity {
+        expected: i8,
+        found: i8,
+    },
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::SymbolNotInLanguage { symbol, position } => {
+                write!(
+                    f,
+                    "Symbol {} not in language at position {}",
+                    symbol, position
+                )
+            }
+            Error::InvalidConstruction { position } => {
+                write!(f, "Invalid construction at position {}", position)
+            }
+            Error::InvalidSubterm { item, cause } => {
+                write!(f, "Invalid subterm {:?}: {}", item, cause)
+            }
+            Error::InvalidArity { expected, found } => {
+                write!(f, "Invalid arity: expected {}, found {}", expected, found)
+            }
+        }
+    }
 }
 
 impl Term {
     pub fn new(language: Language, sequence: Vec<Symbol>) -> Result<Self, Error> {
         let term = Term { language, sequence };
-        if term.val_each_symbol() >= 0 {
+        if term.find_invalid_symbol() >= 0 {
             return Err(Error::SymbolNotInLanguage {
-                symbol: term.sequence[term.val_each_symbol() as usize].clone(),
-                position: term.val_each_symbol(),
+                symbol: term.sequence[term.find_invalid_symbol() as usize].clone(),
+                position: term.find_invalid_symbol(),
             });
         }
         if term.size() == 1 {
@@ -41,7 +70,10 @@ impl Term {
                 position: 0,
             });
         }
-        Ok(term)
+        match term.val_composite() {
+            Ok(_) => Ok(term),
+            Err(cause) => Err(cause),
+        }
     }
 
     pub fn sequence(&self) -> Vec<Symbol> {
@@ -56,7 +88,7 @@ impl Term {
         self.sequence.len()
     }
 
-    fn val_each_symbol(&self) -> i8 {
+    fn find_invalid_symbol(&self) -> i8 {
         let mut position = 0;
         for symbol in self.sequence.iter() {
             if !self.language.symbols().contains(symbol) {
@@ -81,18 +113,22 @@ impl Term {
         self.sequence[0].variant() == Variant::Constant
     }
 
-    fn is_composite(&self) -> bool {
+    fn val_composite(&self) -> Result<(), Error> {
         if self.size() < 4 {
-            return false;
+            return Err(Error::InvalidConstruction {
+                position: (self.size() - 1) as i8,
+            });
         }
         if self.sequence[1] != Symbol::left_paren() {
-            return false;
+            return Err(Error::InvalidConstruction { position: 1 });
         }
         if self.sequence[self.size() - 1] != Symbol::right_paren() {
-            return false;
+            return Err(Error::InvalidConstruction {
+                position: (self.size() - 1) as i8,
+            });
         }
         if self.sequence[0].variant() != Variant::Function {
-            return false;
+            return Err(Error::InvalidConstruction { position: 0 });
         }
         let mut term_vec: Vec<&Symbol> = Vec::new();
         let mut param_count = 0;
@@ -106,15 +142,24 @@ impl Term {
                         param_count += 1;
                         term_vec.clear();
                     }
-                    Err(_) => {
-                        return false;
+                    Err(e) => {
+                        return Err(Error::InvalidSubterm {
+                            item: term_vec.iter().cloned().cloned().collect(),
+                            cause: Box::new(e),
+                        })
                     }
                 }
             } else {
                 term_vec.push(symbol);
             }
         }
-        param_count == self.sequence[0].arity()
+        if param_count != self.sequence[0].arity() {
+            return Err(Error::InvalidArity {
+                expected: self.sequence[0].arity(),
+                found: param_count,
+            });
+        }
+        Ok(())
     }
 }
 
