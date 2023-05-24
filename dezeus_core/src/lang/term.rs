@@ -168,6 +168,20 @@ impl Term {
     }
 }
 
+#[macro_export]
+macro_rules! term {
+    ( $lang:expr, $( $x:expr ),* ) => {
+        {
+            let mut sequence = Vec::new();
+            $(
+                sequence.push($x.clone());
+            )*
+            let expr = Expression::new($lang, sequence).unwrap();
+            Term::new(expr).unwrap()
+        }
+    };
+}
+
 use super::Formalize;
 
 impl Formalize for Term {

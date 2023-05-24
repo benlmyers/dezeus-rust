@@ -79,8 +79,6 @@ impl Expression {
     }
 }
 
-// Example call
-// expr!(lang, s1, s2, ..., sn) where s1, ..., sn are symbols (in the lang)
 #[macro_export]
 macro_rules! expr {
     ( $lang:expr, $( $x:expr ),* ) => {

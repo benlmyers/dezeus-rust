@@ -6,6 +6,7 @@ use dezeus_core::lang::expression::Expression;
 use dezeus_core::lang::language::*;
 use dezeus_core::lang::symbol::*;
 use dezeus_core::lang::term::Term;
+use dezeus_core::term;
 
 #[test]
 fn define_atomic_test() {
@@ -35,6 +36,19 @@ fn define_atomic_test() {
     )
     .unwrap();
     let _ = Term::new(e3).unwrap();
-    let e4 = expr!(l2, g, Symbol::left_paren(), y, Symbol::right_paren());
+    let e4 = expr!(
+        l2.clone(),
+        g,
+        Symbol::left_paren(),
+        y,
+        Symbol::right_paren()
+    );
     let _ = Term::new(e4).unwrap();
+    let _ = term!(
+        l2.clone(),
+        g,
+        Symbol::left_paren(),
+        b,
+        Symbol::right_paren()
+    );
 }
