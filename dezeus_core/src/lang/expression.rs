@@ -79,6 +79,21 @@ impl Expression {
     }
 }
 
+// Example call
+// expr!(lang, s1, s2, ..., sn) where s1, ..., sn are symbols (in the lang)
+#[macro_export]
+macro_rules! expr {
+    ( $lang:expr, $( $x:expr ),* ) => {
+        {
+            let mut sequence = Vec::new();
+            $(
+                sequence.push($x.clone());
+            )*
+            Expression::new($lang, sequence).unwrap()
+        }
+    };
+}
+
 use super::Formalize;
 
 impl Formalize for Expression {
