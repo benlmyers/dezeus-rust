@@ -12,7 +12,7 @@ fn define_atomic_test() {
     let x = Symbol::variable(String::from("x"));
     let y = Symbol::variable(String::from("y"));
     let f = Symbol::function(String::from("f"), 2);
-    let l1 = lang!(a.clone(), x.clone(), f.clone());
+    let l1 = lang!(a, x, f);
     let t1 = Term::new(l1.clone(), vec![a.clone()]);
     assert!(t1.is_ok());
     let t2 = Term::new(l1.clone(), vec![b.clone()]);

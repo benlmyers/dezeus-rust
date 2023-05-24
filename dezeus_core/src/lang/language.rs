@@ -20,7 +20,7 @@ macro_rules! lang {
             use std::collections::HashSet;
             let mut symbols = HashSet::new();
             $(
-                symbols.insert($x);
+                symbols.insert($x.clone());
             )*
             Language::l().extend(symbols)
         }
