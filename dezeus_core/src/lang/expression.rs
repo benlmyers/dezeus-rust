@@ -10,6 +10,7 @@ pub struct Expression {
     sequence: Vec<Symbol>,
 }
 
+#[derive(PartialEq)]
 pub enum Error {
     Empty,
     SymbolNotInLanguage {

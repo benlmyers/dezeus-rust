@@ -4,10 +4,12 @@ use std::fmt::{Debug, Display};
 use super::expression::{Error as ExprError, Expression};
 use super::symbol::*;
 
+#[derive(Clone, PartialEq)]
 pub struct Term {
     expression: Expression,
 }
 
+#[derive(PartialEq)]
 pub enum Error {
     Expression(ExprError),
     TooShort,
@@ -133,17 +135,20 @@ impl Term {
     fn subterms(&self) -> Result<Vec<Term>, Error> {
         let mut subterms: Vec<Term> = Vec::new();
         if self.is_constant() || self.is_variable() {
-            subterms.push(Term::new(self.expr())?);
             return Ok(subterms);
         }
         let val = self.val_composite();
         if val.is_some() {
             return Err(val.unwrap());
         }
-        let mut symbols: Vec<&Symbol> = Vec::new();
+        let mut symbols: Vec<Symbol> = Vec::new();
         for symbol in self.expr().sequence()[2..self.expr().size() - 1].iter() {
             if symbol == &Symbol::comma() || symbol == &Symbol::right_paren() {
-                match Term::new(self.expression.clone()) {
+                let e = Expression::new(self.expr().language().clone(), symbols.clone());
+                if e.is_err() {
+                    return Err(Error::Expression(e.unwrap_err()));
+                }
+                match Term::new(e.unwrap()) {
                     Ok(term) => {
                         symbols.clear();
                         subterms.push(term);
@@ -156,7 +161,7 @@ impl Term {
                     }
                 }
             } else {
-                symbols.push(symbol);
+                symbols.push(symbol.clone());
             }
         }
         Ok(subterms)
