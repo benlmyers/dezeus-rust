@@ -6,3 +6,7 @@ pub mod term;
 pub trait Formalize {
     fn formalize(&self) -> String;
 }
+
+pub trait GetType {
+    fn get_type(&self) -> dyn GetType;
+}
